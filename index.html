@@ -2,237 +2,272 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Product Catalog — Export JPG</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Photo Entry Export Tool</title>
   <style>
     :root{
-      --dark:#004030;
-      --accent:#4A9782;
-      --sand:#DCD0A8;
-      --cream:#FFF9E5;
-      --glass: rgba(255,255,255,0.6);
-      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      --brand-1:#004030; --brand-2:#4A9782; --accent:#DCD0A8; --bg:#FFF9E5;
+      --card-padding:12px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto, "Helvetica Neue", Arial;
     }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--cream),#ffffff);-webkit-tap-highlight-color:transparent}
-    body{touch-action:manipulation}
-    .wrap{max-width:1100px;margin:20px auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    header h1{font-size:1.15rem;color:var(--dark);margin:0}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    .controls input[type=file]{display:none}
-    .btn{background:var(--dark);color:#fff;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
-    .btn.secondary{background:var(--accent)}
+    html,body{height:100%;margin:0;background:var(--bg);color:#042;}
+    .app{max-width:1100px;margin:18px auto;padding:14px}
+    header{display:flex;align-items:center;justify-content:space-between}
+    header h1{font-size:18px;margin:0;color:var(--brand-1)}
+    .controls{display:flex;gap:8px;align-items:center}
+    button{background:var(--brand-2);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:600}
+    .small{padding:6px 8px;font-size:13px}
+    .rows{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+    .row{display:flex;gap:8px;align-items:center;background:white;padding:var(--card-padding);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .row .thumb{width:86px;height:86px;border-radius:8px;background:#f3f3f3;border:1px dashed #ddd;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .row .thumb img{width:100%;height:100%;object-fit:cover}
+    .row .fields{flex:1;display:flex;gap:8px;flex-wrap:wrap}
+    .fields input[type=text], .fields textarea{flex:1;padding:8px;border-radius:8px;border:1px solid #ddd}
+    .actions{display:flex;flex-direction:column;gap:6px}
+    .muted{color:#666;font-size:12px}
 
-    .catalog-card{width:100%;height:560px;border-radius:14px;overflow:hidden;display:flex;box-shadow:0 8px 30px rgba(0,0,0,0.12);background:var(--cream)}
-    .left,.right{flex:1;display:flex;flex-direction:column}
-    .left{align-items:center;justify-content:center;padding:18px;background:linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.6) 100%)}
-    .product-image{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
-    .image-placeholder{width:90%;height:90%;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(0,0,0,0.06);border-radius:10px;background:linear-gradient(180deg,rgba(250,250,250,1),rgba(255,255,255,0.6));color:rgba(0,0,0,0.35);font-weight:600}
-
-    .right{padding:28px;gap:8px}
-    .title{font-size:1.6rem;font-weight:700;color:var(--dark);margin-bottom:6px}
-    .price{font-size:1.4rem;color:var(--accent);font-weight:800}
-    .meta{display:flex;gap:12px;margin-top:10px}
-    .meta .box{background:var(--glass);padding:8px 10px;border-radius:8px;font-weight:700;color:var(--dark)}
-    .features{margin-top:12px}
-    .features li{margin-bottom:6px}
-    .footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center}
-    .brand{font-weight:700;color:var(--dark)}
-    .small{font-size:0.86rem;color:rgba(0,0,0,0.5)}
-
-    form.controls-panel{margin-top:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-    label{display:block;font-size:0.82rem;color:var(--dark);margin-bottom:6px}
-    input[type=text],input[type=number],textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);outline:none}
-    textarea{min-height:84px;resize:vertical}
-
+    /* responsive */
     @media (max-width:720px){
-      .catalog-card{flex-direction:column;height:auto}
-      .left{height:260px}
-      .right{padding:16px}
-      form.controls-panel{grid-template-columns:1fr}
+      .row{flex-direction:column;align-items:stretch}
+      .row .thumb{width:100%;height:200px}
+      .fields{flex-direction:column}
+      header{gap:8px}
     }
+
+    /* print / PDF helper (hidden live area used for export) */
+    .print-area{display:none}
+    .print-page{width:210mm;min-height:297mm;padding:18mm;box-sizing:border-box;page-break-after:always;background:white}
+    .print-entry{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+    .print-entry img{width:70px;height:70px;object-fit:cover;border-radius:6px}
+
+    /* prevent double-tap zoom / touch behaviour */
+    html,body{touch-action:manipulation}
+    *{ -ms-touch-action:manipulation }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="app">
     <header>
-      <h1>Product Catalog — Export as JPG</h1>
+      <h1>Photo Entry Export Tool</h1>
       <div class="controls">
-        <label class="btn" for="imgUpload">Upload Photo</label>
-        <input id="imgUpload" type="file" accept="image/*">
-        <button id="downloadBtn" class="btn secondary">Export JPG (High Quality)</button>
-        <button id="resetBtn" class="btn" title="Reset to sample">Reset</button>
+        <label style="display:inline-flex;align-items:center;gap:8px;background:#fff;padding:6px;border-radius:8px;border:1px solid #ddd">
+          Import CSV
+          <input id="importCsv" type="file" accept=".csv" style="display:none">
+          <input id="importFiles" type="file" multiple style="display:none">
+          <button class="small" id="btnImport">Choose</button>
+        </label>
+        <button id="exportPdf">Export PDF</button>
+        <button id="exportCsv" class="small">Export CSV</button>
       </div>
     </header>
 
-    <main>
-      <section id="catalog" class="catalog-card" aria-label="catalog preview">
-        <div class="left">
-          <div id="imgWrap" class="image-placeholder">Product photo (left half)</div>
-        </div>
-        <div class="right">
-          <div>
-            <div id="prodName" class="title">Sample Product Name</div>
-            <div style="display:flex;gap:12px;align-items:center">
-              <div id="prodPrice" class="price">₹1,499</div>
-              <div class="small">(incl. taxes)</div>
-            </div>
+    <p class="muted">Each row has a photo upload button. When you add a photo and fill required fields, the next row appears automatically. The printable PDF will contain up to <strong>10 rows per page</strong>.</p>
 
-            <div class="meta" style="margin-top:14px">
-              <div class="box">W: <span id="metaW">120 mm</span></div>
-              <div class="box">H: <span id="metaH">200 mm</span></div>
-              <div class="box">Ø: <span id="metaD">60 mm</span></div>
-            </div>
+    <div class="rows" id="rows"></div>
 
-            <ul id="featuresList" class="features">
-              <li>• High-quality build</li>
-              <li>• Lightweight and durable</li>
-              <li>• Easy to clean</li>
-            </ul>
-          </div>
+    <div style="margin-top:14px;display:flex;gap:8px;align-items:center">
+      <button id="addRow">+ Add row</button>
+      <div class="muted">Rows: <span id="rowCount">0</span></div>
+    </div>
 
-          <div class="footer">
-            <div>
-              <div class="brand">Brand / Seller Name</div>
-              <div class="small">SKU: 0001</div>
-            </div>
-            <div class="small">Catalog • Landscape • Auto-resize image</div>
-          </div>
-        </div>
-      </section>
-
-      <form id="editor" class="controls-panel" onsubmit="return false">
-        <div>
-          <label>Product Name</label>
-          <input id="inputName" type="text" value="Sample Product Name">
-        </div>
-        <div>
-          <label>Price (display)</label>
-          <input id="inputPrice" type="text" value="₹1,499">
-        </div>
-        <div>
-          <label>Width (e.g., 120 mm)</label>
-          <input id="inputW" type="text" value="120 mm">
-        </div>
-        <div>
-          <label>Height (e.g., 200 mm)</label>
-          <input id="inputH" type="text" value="200 mm">
-        </div>
-        <div>
-          <label>Diameter (e.g., 60 mm)</label>
-          <input id="inputD" type="text" value="60 mm">
-        </div>
-        <div>
-          <label>SKU / Brand</label>
-          <input id="inputBrand" type="text" value="Brand / Seller Name">
-        </div>
-        <div style="grid-column:1 / -1">
-          <label>Key features (one per line)</label>
-          <textarea id="inputFeatures">High-quality build
-Lightweight and durable
-Easy to clean</textarea>
-        </div>
-      </form>
-
-    </main>
+    <!-- Hidden area used to assemble paginated pages for PDF export -->
+    <div id="printArea" class="print-area" aria-hidden="true"></div>
   </div>
 
+  <!-- Libraries from CDNs (these links are commonly available) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
   <script>
-    const imgWrap = document.getElementById('imgWrap');
-    const imgUpload = document.getElementById('imgUpload');
-    const prodName = document.getElementById('prodName');
-    const prodPrice = document.getElementById('prodPrice');
-    const metaW = document.getElementById('metaW');
-    const metaH = document.getElementById('metaH');
-    const metaD = document.getElementById('metaD');
-    const featuresList = document.getElementById('featuresList');
-    const inputName = document.getElementById('inputName');
-    const inputPrice = document.getElementById('inputPrice');
-    const inputW = document.getElementById('inputW');
-    const inputH = document.getElementById('inputH');
-    const inputD = document.getElementById('inputD');
-    const inputBrand = document.getElementById('inputBrand');
-    const inputFeatures = document.getElementById('inputFeatures');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const catalog = document.getElementById('catalog');
+    // Basic state
+    let entries = [];
+    const MAX_ROWS_PER_PRINT_PAGE = 10;
 
-    function updatePreview(){
-      prodName.textContent = inputName.value || 'Product Name';
-      prodPrice.textContent = inputPrice.value || '—';
-      metaW.textContent = inputW.value || '—';
-      metaH.textContent = inputH.value || '—';
-      metaD.textContent = inputD.value || '—';
-      const lines = inputFeatures.value.split('\n').filter(l=>l.trim());
-      featuresList.innerHTML = lines.map(l=>`<li>• ${escapeHtml(l.trim())}</li>`).join('');
-      document.querySelector('.brand').textContent = inputBrand.value || 'Brand / Seller';
+    const rowsEl = document.getElementById('rows');
+    const rowCountEl = document.getElementById('rowCount');
+    const printArea = document.getElementById('printArea');
+
+    function updateRowCount(){ rowCountEl.textContent = entries.length }
+
+    function createRow(entry = null){
+      const idx = entries.length;
+      const data = entry || {id:Date.now()+Math.random(),name:'',notes:'',imageData:''};
+      entries.push(data);
+
+      const row = document.createElement('div'); row.className='row'; row.dataset.index = idx;
+
+      const thumb = document.createElement('div'); thumb.className='thumb';
+      const img = document.createElement('img');
+      if(data.imageData) img.src = data.imageData;
+      thumb.appendChild(img);
+
+      const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='image/*'; fileInput.style.display='none';
+      const btnUpload = document.createElement('button'); btnUpload.className='small'; btnUpload.textContent='Upload Photo';
+      btnUpload.onclick = ()=> fileInput.click();
+
+      fileInput.addEventListener('change', async (e)=>{
+        const f = e.target.files[0];
+        if(!f) return;
+        const b = await fileToDataURL(f);
+        data.imageData = b;
+        img.src = b;
+        checkAutoAdd(row, data);
+      });
+
+      const fields = document.createElement('div'); fields.className='fields';
+      const nameInput = document.createElement('input'); nameInput.type='text'; nameInput.placeholder='Name / Title'; nameInput.value = data.name || '';
+      const notesInput = document.createElement('textarea'); notesInput.rows=2; notesInput.placeholder='Notes / Description'; notesInput.value = data.notes || '';
+
+      nameInput.addEventListener('input', ()=>{data.name = nameInput.value; checkAutoAdd(row,data)});
+      notesInput.addEventListener('input', ()=>{data.notes = notesInput.value; checkAutoAdd(row,data)});
+
+      fields.append(nameInput, notesInput);
+
+      const actions = document.createElement('div'); actions.className='actions';
+      const btnRemove = document.createElement('button'); btnRemove.className='small'; btnRemove.textContent='Remove';
+      btnRemove.onclick = ()=> removeRow(idx);
+      actions.append(btnUpload, fileInput, btnRemove);
+
+      row.append(thumb, fields, actions);
+      rowsEl.appendChild(row);
+
+      // If image is present but img src empty (when imported), show placeholder text
+      if(!data.imageData){ thumb.innerHTML = '<div style="padding:6px;color:#888;text-align:center">No Photo</div>' }
+
+      updateRowCount();
+      scrollIntoViewSmooth(row);
+      return row;
     }
 
-    function escapeHtml(text){
-      return text.replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+    function fileToDataURL(file){
+      return new Promise((res,rej)=>{
+        const r = new FileReader(); r.onload = ()=> res(r.result); r.onerror = rej; r.readAsDataURL(file);
+      })
     }
 
-    imgUpload.addEventListener('change', (e)=>{
-      const f = e.target.files && e.target.files[0];
-      if(!f) return;
-      const url = URL.createObjectURL(f);
-      const el = document.createElement('img');
-      el.src = url;
-      el.crossOrigin = "anonymous"; // fix CORS issue
-      el.className = 'product-image';
-      el.alt = 'Product photo';
-      imgWrap.innerHTML = '';
-      imgWrap.appendChild(el);
-    });
-
-    resetBtn.addEventListener('click', ()=>{
-      inputName.value = 'Sample Product Name';
-      inputPrice.value = '₹1,499';
-      inputW.value = '120 mm'; inputH.value='200 mm'; inputD.value='60 mm';
-      inputBrand.value = 'Brand / Seller Name';
-      inputFeatures.value = 'High-quality build\nLightweight and durable\nEasy to clean';
-      imgWrap.innerHTML = 'Product photo (left half)';
-      updatePreview();
-    });
-
-    [inputName,inputPrice,inputW,inputH,inputD,inputBrand,inputFeatures].forEach(el=>el.addEventListener('input', updatePreview));
-    updatePreview();
-
-    downloadBtn.addEventListener('click', async ()=>{
-      const scale = Math.max(2, Math.floor(window.devicePixelRatio || 2));
-      downloadBtn.disabled = true; downloadBtn.textContent = 'Preparing...';
-      try{
-        const canvas = await html2canvas(catalog, {scale, backgroundColor: "#FFF9E5", useCORS:true, allowTaint:true});
-        const dataUrl = canvas.toDataURL('image/png'); // use PNG for stability
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        const nameSafe = (inputName.value||'product').replace(/[^a-z0-9_-]/gi,'_').toLowerCase();
-        a.download = `${nameSafe}_catalog.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }catch(err){
-        alert('Export failed. Try again in Chrome/Edge/Firefox.');
-        console.error(err);
-      }finally{
-        downloadBtn.disabled = false; downloadBtn.textContent = 'Export JPG (High Quality)';
+    function checkAutoAdd(rowEl, data){
+      // If required fields (image + name) are filled, and row is last row, add a new row
+      const isLast = Number(rowEl.dataset.index) === entries.length-1;
+      const filled = data.imageData && (data.name && data.name.trim().length>0);
+      if(filled && isLast){
+        // only add if total rows < 2000 (safety) - but pagination will split pages
+        createRow();
       }
+    }
+
+    function removeRow(index){
+      // remove from entries and re-render
+      entries.splice(index,1);
+      renderAll();
+    }
+
+    function renderAll(){
+      rowsEl.innerHTML='';
+      const copy = entries.slice(); entries = [];
+      copy.forEach(e=>createRow(e));
+      updateRowCount();
+    }
+
+    document.getElementById('addRow').addEventListener('click', ()=> createRow());
+
+    // Export CSV (dataURI images embedded)
+    document.getElementById('exportCsv').addEventListener('click', ()=>{
+      if(entries.length===0) return alert('No rows to export');
+      const rows = entries.map(e=>({id:e.id,name:e.name.replace(/\r|\n/g,' '),notes:e.notes.replace(/\r|\n/g,' '),imageData:e.imageData||''}));
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='export.csv'; a.click();
+      URL.revokeObjectURL(url);
     });
 
-    let lastTouch = 0;
-    document.addEventListener('touchstart', function(e){
-      if(e.touches.length>1) e.preventDefault();
-      const now = Date.now();
-      if(now - lastTouch <= 300){ e.preventDefault(); }
-      lastTouch = now;
-    }, {passive:false});
+    // Import CSV (expected columns: id,name,notes,imageData)
+    document.getElementById('btnImport').addEventListener('click', ()=>{
+      document.getElementById('importCsv').click();
+    });
 
-    document.addEventListener('keydown', e=>{
-      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='e'){
-        e.preventDefault(); downloadBtn.click();
+    document.getElementById('importCsv').addEventListener('change', (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      Papa.parse(f,{header:true,complete:function(res){
+        // We'll accept rows with imageData as dataURI OR blank
+        const data = res.data.filter(r=>r.name || r.notes || r.imageData);
+        if(data.length===0){ alert('No usable rows found'); return }
+        entries = [];
+        data.forEach(r=>{
+          entries.push({id: r.id || Date.now()+Math.random(), name:r.name||'', notes:r.notes||'', imageData: r.imageData||''});
+        });
+        renderAll();
+      }});
+    });
+
+    // PDF export: create printable pages with up to MAX_ROWS_PER_PRINT_PAGE rows per page
+    document.getElementById('exportPdf').addEventListener('click', async ()=>{
+      if(entries.length===0) return alert('No rows to export');
+      // build print area
+      printArea.innerHTML='';
+      const pages = Math.ceil(entries.length / MAX_ROWS_PER_PRINT_PAGE);
+      for(let p=0;p<pages;p++){
+        const pageEl = document.createElement('div'); pageEl.className='print-page';
+        const slice = entries.slice(p*MAX_ROWS_PER_PRINT_PAGE, (p+1)*MAX_ROWS_PER_PRINT_PAGE);
+        slice.forEach((e,i)=>{
+          const ent = document.createElement('div'); ent.className='print-entry';
+          const im = document.createElement('img'); im.alt='photo';
+          im.src = e.imageData || '';
+          const txt = document.createElement('div');
+          txt.innerHTML = `<strong>${escapeHtml(e.name||'')}</strong><div style="font-size:13px;margin-top:6px">${escapeHtml(e.notes||'')}</div>`;
+          ent.append(im, txt);
+          pageEl.appendChild(ent);
+        });
+        printArea.appendChild(pageEl);
       }
+
+      // render each page to canvas and add to jsPDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({unit:'mm',format:'a4'});
+
+      for(let i=0;i<printArea.children.length;i++){
+        const page = printArea.children[i];
+        // make visible temporarily to render styles
+        page.style.display='block';
+        const canvas = await html2canvas(page, {scale:2,useCORS:true,allowTaint:true});
+        const imgData = canvas.toDataURL('image/jpeg',0.95);
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        if(i>0) pdf.addPage();
+        pdf.addImage(imgData,'JPEG',0,0,pdfWidth,pdfHeight);
+        page.style.display='none';
+      }
+
+      pdf.save('export.pdf');
     });
+
+    // helper escape
+    function escapeHtml(txt){ return (txt||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g,'&#039;'); }
+
+    // smooth scroll
+    function scrollIntoViewSmooth(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+    // initial row
+    createRow();
+
+    // Prevent double-tap zoom on iOS: track last touch
+    (function(){
+      let lastTouch = 0;
+      document.addEventListener('touchend', function(e){
+        const now = Date.now();
+        if(now - lastTouch <= 300){ e.preventDefault(); }
+        lastTouch = now;
+      }, {passive:false});
+    })();
+
+    // Prevent pinch-zoom via gesturestart
+    document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+
+    // Accessibility: keyboard add row on Enter when focused inside rows container
+    rowsEl.addEventListener('keydown', function(e){ if(e.key==='Enter' && e.target.tagName==='INPUT') createRow(); });
+
   </script>
 </body>
 </html>
