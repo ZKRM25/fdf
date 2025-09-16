@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Product Catalog — Export JPG</title>
+  <style>
+    :root{
+      --dark:#004030;
+      --accent:#4A9782;
+      --sand:#DCD0A8;
+      --cream:#FFF9E5;
+      --glass: rgba(255,255,255,0.6);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--cream),#ffffff);-webkit-tap-highlight-color:transparent}
+    body{touch-action:manipulation}
+    .wrap{max-width:1100px;margin:20px auto;padding:16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    header h1{font-size:1.15rem;color:var(--dark);margin:0}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .controls input[type=file]{display:none}
+    .btn{background:var(--dark);color:#fff;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.secondary{background:var(--accent)}
+
+    .catalog-card{width:100%;height:560px;border-radius:14px;overflow:hidden;display:flex;box-shadow:0 8px 30px rgba(0,0,0,0.12);background:var(--cream)}
+    .left,.right{flex:1;display:flex;flex-direction:column}
+    .left{align-items:center;justify-content:center;padding:18px;background:linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.6) 100%)}
+    .product-image{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+    .image-placeholder{width:90%;height:90%;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(0,0,0,0.06);border-radius:10px;background:linear-gradient(180deg,rgba(250,250,250,1),rgba(255,255,255,0.6));color:rgba(0,0,0,0.35);font-weight:600}
+
+    .right{padding:28px;gap:8px}
+    .title{font-size:1.6rem;font-weight:700;color:var(--dark);margin-bottom:6px}
+    .price{font-size:1.4rem;color:var(--accent);font-weight:800}
+    .meta{display:flex;gap:12px;margin-top:10px}
+    .meta .box{background:var(--glass);padding:8px 10px;border-radius:8px;font-weight:700;color:var(--dark)}
+    .features{margin-top:12px}
+    .features li{margin-bottom:6px}
+    .footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center}
+    .brand{font-weight:700;color:var(--dark)}
+    .small{font-size:0.86rem;color:rgba(0,0,0,0.5)}
+
+    form.controls-panel{margin-top:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    label{display:block;font-size:0.82rem;color:var(--dark);margin-bottom:6px}
+    input[type=text],input[type=number],textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);outline:none}
+    textarea{min-height:84px;resize:vertical}
+
+    @media (max-width:720px){
+      .catalog-card{flex-direction:column;height:auto}
+      .left{height:260px}
+      .right{padding:16px}
+      form.controls-panel{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Product Catalog — Export as JPG</h1>
+      <div class="controls">
+        <label class="btn" for="imgUpload">Upload Photo</label>
+        <input id="imgUpload" type="file" accept="image/*">
+        <button id="downloadBtn" class="btn secondary">Export JPG (High Quality)</button>
+        <button id="resetBtn" class="btn" title="Reset to sample">Reset</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="catalog" class="catalog-card" aria-label="catalog preview">
+        <div class="left">
+          <div id="imgWrap" class="image-placeholder">Product photo (left half)</div>
+        </div>
+        <div class="right">
+          <div>
+            <div id="prodName" class="title">Sample Product Name</div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div id="prodPrice" class="price">₹1,499</div>
+              <div class="small">(incl. taxes)</div>
+            </div>
+
+            <div class="meta" style="margin-top:14px">
+              <div class="box">W: <span id="metaW">120 mm</span></div>
+              <div class="box">H: <span id="metaH">200 mm</span></div>
+              <div class="box">Ø: <span id="metaD">60 mm</span></div>
+            </div>
+
+            <ul id="featuresList" class="features">
+              <li>• High-quality build</li>
+              <li>• Lightweight and durable</li>
+              <li>• Easy to clean</li>
+            </ul>
+          </div>
+
+          <div class="footer">
+            <div>
+              <div class="brand">Brand / Seller Name</div>
+              <div class="small">SKU: 0001</div>
+            </div>
+            <div class="small">Catalog • Landscape • Auto-resize image</div>
+          </div>
+        </div>
+      </section>
+
+      <form id="editor" class="controls-panel" onsubmit="return false">
+        <div>
+          <label>Product Name</label>
+          <input id="inputName" type="text" value="Sample Product Name">
+        </div>
+        <div>
+          <label>Price (display)</label>
+          <input id="inputPrice" type="text" value="₹1,499">
+        </div>
+        <div>
+          <label>Width (e.g., 120 mm)</label>
+          <input id="inputW" type="text" value="120 mm">
+        </div>
+        <div>
+          <label>Height (e.g., 200 mm)</label>
+          <input id="inputH" type="text" value="200 mm">
+        </div>
+        <div>
+          <label>Diameter (e.g., 60 mm)</label>
+          <input id="inputD" type="text" value="60 mm">
+        </div>
+        <div>
+          <label>SKU / Brand</label>
+          <input id="inputBrand" type="text" value="Brand / Seller Name">
+        </div>
+        <div style="grid-column:1 / -1">
+          <label>Key features (one per line)</label>
+          <textarea id="inputFeatures">High-quality build
+Lightweight and durable
+Easy to clean</textarea>
+        </div>
+      </form>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    const imgWrap = document.getElementById('imgWrap');
+    const imgUpload = document.getElementById('imgUpload');
+    const prodName = document.getElementById('prodName');
+    const prodPrice = document.getElementById('prodPrice');
+    const metaW = document.getElementById('metaW');
+    const metaH = document.getElementById('metaH');
+    const metaD = document.getElementById('metaD');
+    const featuresList = document.getElementById('featuresList');
+    const inputName = document.getElementById('inputName');
+    const inputPrice = document.getElementById('inputPrice');
+    const inputW = document.getElementById('inputW');
+    const inputH = document.getElementById('inputH');
+    const inputD = document.getElementById('inputD');
+    const inputBrand = document.getElementById('inputBrand');
+    const inputFeatures = document.getElementById('inputFeatures');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const catalog = document.getElementById('catalog');
+
+    function updatePreview(){
+      prodName.textContent = inputName.value || 'Product Name';
+      prodPrice.textContent = inputPrice.value || '—';
+      metaW.textContent = inputW.value || '—';
+      metaH.textContent = inputH.value || '—';
+      metaD.textContent = inputD.value || '—';
+      const lines = inputFeatures.value.split('\n').filter(l=>l.trim());
+      featuresList.innerHTML = lines.map(l=>`<li>• ${escapeHtml(l.trim())}</li>`).join('');
+      document.querySelector('.brand').textContent = inputBrand.value || 'Brand / Seller';
+    }
+
+    function escapeHtml(text){
+      return text.replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+    }
+
+    imgUpload.addEventListener('change', (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const url = URL.createObjectURL(f);
+      const el = document.createElement('img');
+      el.src = url;
+      el.crossOrigin = "anonymous"; // fix CORS issue
+      el.className = 'product-image';
+      el.alt = 'Product photo';
+      imgWrap.innerHTML = '';
+      imgWrap.appendChild(el);
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      inputName.value = 'Sample Product Name';
+      inputPrice.value = '₹1,499';
+      inputW.value = '120 mm'; inputH.value='200 mm'; inputD.value='60 mm';
+      inputBrand.value = 'Brand / Seller Name';
+      inputFeatures.value = 'High-quality build\nLightweight and durable\nEasy to clean';
+      imgWrap.innerHTML = 'Product photo (left half)';
+      updatePreview();
+    });
+
+    [inputName,inputPrice,inputW,inputH,inputD,inputBrand,inputFeatures].forEach(el=>el.addEventListener('input', updatePreview));
+    updatePreview();
+
+    downloadBtn.addEventListener('click', async ()=>{
+      const scale = Math.max(2, Math.floor(window.devicePixelRatio || 2));
+      downloadBtn.disabled = true; downloadBtn.textContent = 'Preparing...';
+      try{
+        const canvas = await html2canvas(catalog, {scale, backgroundColor: "#FFF9E5", useCORS:true, allowTaint:true});
+        const dataUrl = canvas.toDataURL('image/png'); // use PNG for stability
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        const nameSafe = (inputName.value||'product').replace(/[^a-z0-9_-]/gi,'_').toLowerCase();
+        a.download = `${nameSafe}_catalog.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }catch(err){
+        alert('Export failed. Try again in Chrome/Edge/Firefox.');
+        console.error(err);
+      }finally{
+        downloadBtn.disabled = false; downloadBtn.textContent = 'Export JPG (High Quality)';
+      }
+    });
+
+    let lastTouch = 0;
+    document.addEventListener('touchstart', function(e){
+      if(e.touches.length>1) e.preventDefault();
+      const now = Date.now();
+      if(now - lastTouch <= 300){ e.preventDefault(); }
+      lastTouch = now;
+    }, {passive:false});
+
+    document.addEventListener('keydown', e=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='e'){
+        e.preventDefault(); downloadBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
